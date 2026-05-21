@@ -236,9 +236,11 @@ $$f_i^{eq} = \omega_i \rho \bigl(1 + 3 e_i \cdot u + \frac{9}{2}(e_i \cdot u)^2 
 
 碰撞和迁移过程为：
 
+
 $$
-f_i* = f_i - omega(f_i - f_i^eq) + F_i
+f_i^{*}=f_i-\Omega\left(f_i - f_i^{eq}\right)+F_i
 $$
+
 
 其中：
 
