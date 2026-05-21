@@ -90,19 +90,7 @@ $$
 相场演化方程中包含以下贡献：
 
 $$
-\phi^{n+1}=\phi^n
-+
-S_{\mathrm{adv}}
-+
-S_{\mathrm{AC}}
-+
-S_{\mathrm{evap}}
-+
-S_{\mathrm{cond}}
-+
-S_{\mathrm{rewet}}
-+
-S_{\mathrm{stem}}
+\phi^{n+1}=\phi^n+S_{\mathrm{adv}}+S_{\mathrm{AC}}+S_{\mathrm{evap}}+S_{\mathrm{cond}}+S_{\mathrm{rewet}}+S_{\mathrm{stem}}
 $$
 
 其中：
