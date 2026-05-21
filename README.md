@@ -1094,4 +1094,4 @@ q_wall = -k × ∂T/∂y
 项目：Pool Boiling LBM  
 版本：160 × 100 single-bubble demonstration  
 日期：2026-05-21
-项目地址：https://github.com/alexmercer37/LBM-PipePhaseChange
+项目地址：https://github.com/alexmercer37/LBM-PoolBoiling
