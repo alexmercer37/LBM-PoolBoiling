@@ -323,9 +323,9 @@ Fy += buoyancy * vapor_fraction;
 
 | 阶段 | 参数 | 当前值 | 作用 |
 |---|---|---:|---|
-| 生长阶段 | `BUOYANCY_GROWTH` | `2.4e-5` | 避免气泡过早脱离壁面 |
-| 断颈阶段 | `BUOYANCY_PINCH` | `5.2e-5` | 促进气泡上部抬升和泡颈拉细 |
-| 上升阶段 | `BUOYANCY_RISE` | `2.5e-5` | 控制脱落气泡上升速度 |
+| 生长阶段 | `BUOYANCY_GROWTH` | $2.4 \times 10^{-5}$ | 避免气泡过早脱离壁面 |
+| 断颈阶段 | `BUOYANCY_PINCH` | $5.2 \times 10^{-5}$ | 促进气泡上部抬升和泡颈拉细 |
+| 上升阶段 | `BUOYANCY_RISE` | $2.5 \times 10^{-5}$ | 控制脱落气泡上升速度 |
 
 ### 7. 可视化密度模型
 
@@ -529,7 +529,7 @@ $$
 | 参数 | 当前值 | 作用 |
 |---|---:|---|
 | `EVAP_GROWTH` | 0.082 | 驱动壁面气泡生长 |
-| `BUOYANCY_GROWTH` | `2.4e-5` | 避免气泡过早脱离 |
+| `BUOYANCY_GROWTH` | $2.4 \times 10^{-5}$ | 避免气泡过早脱离 |
 | `COND_GROWTH` | 0.0028 | 限制异常扩散 |
 | `WALL_EVAP_BOOST_GROWTH` | 2.35 | 增强近壁蒸发 |
 
@@ -566,7 +566,7 @@ $$
 | 参数 | 当前值 | 作用 |
 |---|---:|---|
 | `EVAP_PINCH` | 0.018 | 降低脱落阶段蒸发 |
-| `BUOYANCY_PINCH` | `5.2e-5` | 拉升气泡并促进断颈 |
+| `BUOYANCY_PINCH` | $5.2 \times 10^{-5}$ | 拉升气泡并促进断颈 |
 | `COND_PINCH` | 0.0038 | 抑制壁面细长汽柱 |
 | `NECK_REWETTING` | 0.00110 | 促进泡颈处液体回补 |
 | `STEM_SUPPRESSION` | 0.00040 | 抑制壁面残留气柱 |
@@ -601,7 +601,7 @@ $$
 |---|---:|---|
 | `EVAP_RISE` | 0.020 | 轻微维持脱落气泡 |
 | `COND_RISE` | 0.00030 | 控制后期缩小速度 |
-| `BUOYANCY_RISE` | `2.5e-5` | 控制气泡上升速度 |
+| `BUOYANCY_RISE` | $2.5 \times 10^{-5}$ | 控制气泡上升速度 |
 | `DETACHED_SUPPORT` | 0.0022 | 防止脱落气泡过早消失 |
 | `RISE_VELOCITY_DAMPING` | 0.993 | 控制上升速度，避免撞顶 |
 
@@ -720,7 +720,7 @@ phi = PHI_LIQUID
 | `MOBILITY` | 0.010 | 相场迁移率 |
 | `DETACHED_MOBILITY` | 0.0065 | 脱落后相场迁移率 |
 | `EPS2` | 2.18 | 界面厚度相关参数 |
-| `SURFACE_TENSION` | `8.6e-4` | 表面张力系数 |
+| `SURFACE_TENSION` | $8.6 \times 10^{-4}$ | 表面张力系数 |
 
 ### 3. 温度参数
 
@@ -759,9 +759,9 @@ phi = PHI_LIQUID
 
 | 参数 | 当前值 | 说明 |
 |---|---:|---|
-| `BUOYANCY_GROWTH` | `2.4e-5` | 生长阶段浮力 |
-| `BUOYANCY_PINCH` | `5.2e-5` | 断颈阶段浮力 |
-| `BUOYANCY_RISE` | `2.5e-5` | 上升阶段浮力 |
+| `BUOYANCY_GROWTH` | $2.4 \times 10^{-5}$ | 生长阶段浮力 |
+| `BUOYANCY_PINCH` | $5.2 \times 10^{-5}$ | 断颈阶段浮力 |
+| `BUOYANCY_RISE` | $2.5 \times 10^{-5}$ | 上升阶段浮力 |
 
 ### 7. 蒸发与冷凝参数
 
