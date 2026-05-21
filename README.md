@@ -148,9 +148,7 @@ $$
 
 
 $$
-\Delta T_{\mathrm{sub}}
-=
-\max \left(0,\ T_{\mathrm{sat}} - T \right)
+\Delta T_{\mathrm{sub}}=\max \left(0,\ T_{\mathrm{sat}} - T \right)
 $$
 
 
