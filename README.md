@@ -64,11 +64,14 @@
 
 相场变量定义为：
 
-```text
-phi =  1   液相
-phi = -1   气相
-phi =  0   气液界面
-```
+$$
+\phi =
+\begin{cases}
+1, & \text{液相} \\
+-1, & \text{气相} \\
+0, & \text{气液界面}
+\end{cases}
+$$
 
 气泡界面通过 `phi = 0` 的等值线表示。
 
@@ -78,32 +81,45 @@ phi =  0   气液界面
 
 界面指示函数定义为：
 
-```text
-I(phi) = 1 - phi²
-```
+$$
+I(\phi) = 1 - \phi^2
+$$
 
 该函数在气液界面附近最大，在纯气相和纯液相区域趋近于 0，因此可用于限制蒸发、冷凝、潜热冷却和界面相关项主要发生在气液界面附近。
 
 相场演化方程中包含以下贡献：
 
-```text
-phi_new = phi
-        + advection
-        + Allen-Cahn interface term
-        + evaporation
-        + condensation
-        + neck rewetting
-        + stem suppression
-```
+$$
+\phi^{n+1}
+=
+\phi^n
++
+S_{\mathrm{adv}}
++
+S_{\mathrm{AC}}
++
+S_{\mathrm{evap}}
++
+S_{\mathrm{cond}}
++
+S_{\mathrm{rewet}}
++
+S_{\mathrm{stem}}
+$$
 
-| 项 | 作用 |
-|---|---|
-| `advection` | 速度场对气泡界面的输运 |
-| `Allen-Cahn interface term` | 保持界面平滑并控制相场演化 |
-| `evaporation` | 受热蒸发，使气泡增长 |
-| `condensation` | 冷凝作用，使气泡缩小 |
-| `neck rewetting` | 促进泡颈断裂和壁面再润湿 |
-| `stem suppression` | 抑制壁面附近残留细长汽柱 |
+其中：
+
+| 符号 | 对应代码项 | 中文含义 |
+|---|---|---|
+| $\phi^{n+1}$ | `phi_new` | 下一时间步相场变量 |
+| $\phi^n$ | `phi` | 当前时间步相场变量 |
+| $S_{\mathrm{adv}}$ | `advection` | 对流输运项，表示速度场对气泡界面的搬运 |
+| $S_{\mathrm{AC}}$ | `Allen-Cahn interface term` | Allen-Cahn 界面恢复项，用于保持界面平滑 |
+| $S_{\mathrm{evap}}$ | `evaporation` | 蒸发项，使液相向气相转化，促进气泡生长 |
+| $S_{\mathrm{cond}}$ | `condensation` | 冷凝项，使气相向液相转化，促进气泡缩小 |
+| $S_{\mathrm{rewet}}$ | `neck rewetting` | 泡颈再润湿项，促进气泡脱落后液体回补壁面 |
+| $S_{\mathrm{stem}}$ | `stem suppression` | 汽柱抑制项，防止壁面残留细长气柱 |
+
 
 ### 2. 温度驱动相变模型
 
@@ -115,10 +131,13 @@ constexpr double T_SAT = 1.0;
 
 局部温度高于饱和温度时，气泡倾向于蒸发增长；局部温度低于饱和温度时，气泡倾向于冷凝缩小：
 
-```text
-T > T_SAT  → 蒸发增强
-T < T_SAT  → 冷凝增强
-```
+$$
+\begin{cases}
+T > T_{\mathrm{sat}}, & \text{蒸发增强} \\
+T < T_{\mathrm{sat}}, & \text{冷凝增强} \\
+T = T_{\mathrm{sat}}, & \text{处于饱和状态}
+\end{cases}
+$$
 
 近壁面加热区蒸发项主要用于驱动气泡生长：
 
@@ -132,15 +151,24 @@ if (y <= EVAP_HEIGHT && dx_center <= HEATER_LATERAL_HALF_WIDTH)
 
 其中：
 
-```text
-superheat = max(0, T - (T_SAT + 0.010))
-```
+$$
+\Delta T_{\mathrm{sup}}
+=
+\max \left(0,\ T - \left(T_{\mathrm{sat}} + \Delta T_0\right) \right)
+$$
+$$
+\Delta T_0 = 0.010
+$$
 
 冷凝项根据局部过冷度计算：
 
-```text
-subcool = max(0, T_SAT - T)
-```
+
+$$
+\Delta T_{\mathrm{sub}}
+=
+\max \left(0,\ T_{\mathrm{sat}} - T \right)
+$$
+
 
 冷凝强度随高度和相区进行修正，用于控制脱落气泡后期逐渐缩小。
 
@@ -148,27 +176,39 @@ subcool = max(0, T_SAT - T)
 
 温度场采用扩散、对流和潜热冷却共同演化：
 
-```text
-T_new = T + thermal_diffusion + thermal_advection - latent_cooling
-```
+$$
+T^{n+1}
+=
+T^n
++
+D_T \nabla^2 T^n
+-
+C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
+-
+Q_L
+$$
 
 其中，热扩散项为：
 
-```text
-thermal_diffusion = THERMAL_DIFF × ∇²T
-```
+$$
+D_T \nabla^2 T^n
+$$
 
 温度对流项根据局部速度方向采用迎风格式近似：
 
-```text
-thermal_advection = -THERMAL_ADV × (T - T_upwind)
-```
+$$
+- C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
+$$
 
 潜热冷却项为：
 
-```text
-latent_cooling = LATENT_COOLING × max(0, T_SAT - T) × I(phi)
-```
+$$
+Q_L
+=
+L_c
+\max \left(0, T_{\mathrm{sat}} - T^n \right)
+I(\phi)
+$$
 
 主要温度参数如下：
 
@@ -183,11 +223,17 @@ latent_cooling = LATENT_COOLING × max(0, T_SAT - T) × I(phi)
 
 底部中心设置局部高温热斑，用于表示活性成核点：
 
-```text
-temp[y=1] = T_WALL + 0.090
-temp[y=2] = T_WALL + 0.058
-temp[y=3] = T_WALL + 0.034
-```
+$$
+T(x,y)=
+\begin{cases}
+T_{\mathrm{wall}} + 0.090, & y = 1,\ |x-x_n| \leq w_h \\
+T_{\mathrm{wall}} + 0.058, & y = 2,\ |x-x_n| \leq w_h \\
+T_{\mathrm{wall}} + 0.034, & y = 3,\ |x-x_n| \leq w_h \\
+T_{\mathrm{wall}}, & y = 1,\ |x-x_n| > w_h
+\end{cases}
+$$
+
+其中，$x_n$ 为成核中心位置，$w_h$ 为局部热斑半宽度。
 
 因此，在温度场动画中，底部中心区域出现高亮是正常现象，表示局部加热壁面和气泡成核区域。
 
@@ -196,10 +242,9 @@ temp[y=3] = T_WALL + 0.034
 流场采用 D2Q9 格子 Boltzmann 方法，碰撞模型为 BGK 格式。
 
 平衡分布函数为：
-
-```text
-f_i^eq = w_i rho [1 + 3(e_i · u) + 0.5(3e_i · u)^2 - 1.5u²]
-```
+$$
+f_i^{eq}=\omega_i\rho(1+3e_i\bullet u+\frac{9}{2}{(e_i\bullet u)}^2-\frac{3}{2}u^2)
+$$
 
 | 符号 | 含义 |
 |---|---|
@@ -211,9 +256,9 @@ f_i^eq = w_i rho [1 + 3(e_i · u) + 0.5(3e_i · u)^2 - 1.5u²]
 
 碰撞和迁移过程为：
 
-```text
+$$
 f_i* = f_i - omega(f_i - f_i^eq) + F_i
-```
+$$
 
 其中：
 
@@ -234,16 +279,34 @@ omega = 1.0 / TAU
 
 代码通过相场梯度和曲率近似构造表面张力：
 
-```text
-grad_phi = ∇phi
-curvature_proxy = -∇²phi
-```
+$$
+\nabla \phi =
+\left(
+\frac{\partial \phi}{\partial x},
+\frac{\partial \phi}{\partial y}
+\right)
+$$
+
+$$
+\kappa_{\text{proxy}} = -\nabla^2 \phi
+$$
+
+其中：
+
+$$
+\nabla^2 \phi =
+\frac{\partial^2 \phi}{\partial x^2}
++
+\frac{\partial^2 \phi}{\partial y^2}
+$$
 
 表面张力力项为：
 
-```text
-F_surface = sigma × curvature_proxy × grad_phi
-```
+$$
+\mathbf{F}_{s}
+=
+\sigma \kappa_{\text{proxy}} \nabla \phi
+$$
 
 对应代码形式为：
 
@@ -264,9 +327,11 @@ constexpr double SURFACE_TENSION = 8.6e-4;
 
 气泡上升主要由浮力项驱动。代码中通过气相体积分数近似构造浮力：
 
-```text
-vapor_fraction = 0.5 × (1 - phi)
-```
+$$
+\alpha_v
+=
+\frac{1-\phi}{2}
+$$
 
 当 `phi ≈ -1` 时，`vapor_fraction ≈ 1`，表示气相区域；当 `phi ≈ 1` 时，`vapor_fraction ≈ 0`，表示液相区域。
 
@@ -296,17 +361,38 @@ rho_phase =
 
 其中：
 
-```text
-RHO_LIQUID_VIEW = 1.0
-RHO_VAPOR_VIEW  = 0.12
-```
+$$
+\rho_{\mathrm{view}}
+=
+\frac{\rho_l+\rho_v}{2}
++
+\frac{\rho_l-\rho_v}{2}\phi
+$$
+
+
+$$
+\rho_l = 1.0
+$$
+
+$$
+\rho_v = 0.12
+$$
 
 因此：
 
-```text
-phi =  1  → rho ≈ 1.0   液相
-phi = -1  → rho ≈ 0.12  气相
-```
+$$
+\phi = 1
+\Rightarrow
+\rho_{\mathrm{view}} = \rho_l = 1.0
+$$
+
+$$
+\phi = -1
+\Rightarrow
+\rho_{\mathrm{view}} = \rho_v = 0.12
+$$
+
+其中，$\rho_l$ 表示液相可视化密度，$\rho_v$ 表示气相可视化密度。
 
 需要注意的是，`rho` 主要用于可视化气液分布；`rho_lbm` 是由 LBM 分布函数求和得到的原始流体密度。
 
@@ -318,25 +404,37 @@ phi = -1  → rho ≈ 0.12  气相
 
 每个格点的密度和动量由分布函数求和得到：
 
-```text
-rho = Σ f_i
-jx  = Σ f_i e_ix
-jy  = Σ f_i e_iy
-```
+$$
+\rho = \sum_i f_i
+$$
+
+$$
+j_x = \sum_i f_i e_{ix}
+$$
+
+$$
+j_y = \sum_i f_i e_{iy}
+$$
+
 
 速度为：
 
-```text
-ux = jx / rho
-uy = jy / rho
-```
+$$
+u_x = \frac{j_x}{\rho}
+$$
+
+$$
+u_y = \frac{j_y}{\rho}
+$$
 
 为了保证数值稳定，速度会被限制在：
 
-```text
-[-VMAX, VMAX]
-```
-
+$$
+u_x, u_y \in [-U_{\max}, U_{\max}]
+$$
+$$
+U_{\max} = \texttt{VMAX}
+$$
 其中：
 
 ```cpp
@@ -347,18 +445,43 @@ VMAX = 0.10
 
 温度场更新包含扩散、对流和潜热冷却：
 
-```text
-T_new = T + THERMAL_DIFF × lap(T)
-          - THERMAL_ADV × (T - T_upwind)
-          - LATENT_COOLING × max(0, T_SAT - T) × I(phi)
-```
+$$
+T^{n+1}
+=
+T^n
++
+D_T \nabla^2 T^n
+-
+C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
+-
+L_c \max \left(0,\ T_{\mathrm{sat}} - T^n \right) I(\phi)
+$$
+其中：
 
+$$
+D_T = \texttt{THERMAL\_DIFF}
+$$
+
+$$
+C_T = \texttt{THERMAL\_ADV}
+$$
+
+$$
+L_c = \texttt{LATENT\_COOLING}
+$$
+
+$$
+I(\phi)=1-\phi^2
+$$
 底部壁面保持加热温度，顶部保持低温边界：
 
-```text
-T_wall = 1.010
-T_top  = 0.985
-```
+$$
+T_{\mathrm{wall}} = 1.010
+$$
+
+$$
+T_{\mathrm{top}} = 0.985
+$$
 
 底部中心热斑在每一步都会重新施加，以保持稳定加热。
 
@@ -366,35 +489,66 @@ T_top  = 0.985
 
 相场更新形式为：
 
-```text
-phi_new = clamp(
-    phi
-  + adv
-  + ac
-  + evaporation
-  + condensation
-  + neck_rewetting
-  + stem_suppression,
-  -1, 1
-)
-```
+$$
+\phi^{n+1}
+=
+\mathrm{clip}
+\left(
+\phi^n
++
+S_{\mathrm{adv}}
++
+S_{\mathrm{AC}}
++
+S_{\mathrm{evap}}
++
+S_{\mathrm{cond}}
++
+S_{\mathrm{rewet}}
++
+S_{\mathrm{stem}},
+-1,\ 1
+\right)
+$$
 
-| 项 | 说明 |
-|---|---|
-| `adv` | 速度场输运 |
-| `ac` | Allen-Cahn 型界面恢复项 |
-| `evaporation` | 蒸发项，使 `phi` 向气相方向变化 |
-| `condensation` | 冷凝项，使 `phi` 向液相方向变化 |
-| `neck_rewetting` | 泡颈区液体回补 |
-| `stem_suppression` | 抑制细汽柱残留 |
+其中：
 
+| 符号 | 对应代码项 | 含义 |
+|---|---|---|
+| $\phi^{n+1}$ | `phi_new` | 下一时间步相场变量 |
+| $\phi^n$ | `phi` | 当前时间步相场变量 |
+| $S_{\mathrm{adv}}$ | `adv` | 对流输运项 |
+| $S_{\mathrm{AC}}$ | `ac` | Allen-Cahn 界面恢复项 |
+| $S_{\mathrm{evap}}$ | `evaporation` | 蒸发项 |
+| $S_{\mathrm{cond}}$ | `condensation` | 冷凝项 |
+| $S_{\mathrm{rewet}}$ | `neck_rewetting` | 泡颈再润湿项 |
+| $S_{\mathrm{stem}}$ | `stem_suppression` | 汽柱抑制项 |
 ### 4. 碰撞与迁移
 
 流场采用标准 LBM 碰撞迁移：
 
-```text
-post = f - OMEGA × (f - f_eq) + force_term
-```
+$$
+f_i^{*}
+=
+f_i
+-
+\Omega
+\left(
+f_i - f_i^{eq}
+\right)
++
+F_i
+$$
+
+其中：
+
+| 符号 | 对应代码项 | 含义 |
+|---|---|---|
+| $f_i^{*}$ | `post` | 碰撞和受力后的分布函数 |
+| $f_i$ | `f` | 当前分布函数 |
+| $f_i^{eq}$ | `f_eq` | 平衡分布函数 |
+| $\Omega$ | `OMEGA` | 碰撞频率，$\Omega = 1/\tau$ |
+| $F_i$ | `force_term` | 外力项，包括表面张力和浮力贡献 |
 
 随后按 D2Q9 速度方向迁移到相邻格点。
 
@@ -416,10 +570,15 @@ post = f - OMEGA × (f - f_eq) + force_term
 
 时间范围：
 
-```text
-0 <= step < GROWTH_END
-GROWTH_END = 2600
-```
+$$
+0 \leq n < N_{\mathrm{growth}}
+$$
+
+其中：
+
+$$
+N_{\mathrm{growth}} = 2600
+$$
 
 该阶段目标是让气泡在底部加热壁面上稳定长大。
 
@@ -443,10 +602,19 @@ GROWTH_END = 2600
 
 时间范围：
 
-```text
-GROWTH_END <= step < PINCH_END
-PINCH_END = 5200
-```
+$$
+N_{\mathrm{growth}} \leq n < N_{\mathrm{pinch}}
+$$
+
+其中：
+
+$$
+N_{\mathrm{growth}} = 2600
+$$
+
+$$
+N_{\mathrm{pinch}} = 5200
+$$
 
 该阶段目标是让气泡从壁面顺利脱落，避免形成持续气柱。
 
@@ -472,9 +640,15 @@ PINCH_END = 5200
 
 时间范围：
 
-```text
-step >= PINCH_END
-```
+$$
+n \geq N_{\mathrm{pinch}}
+$$
+
+其中：
+
+$$
+N_{\mathrm{pinch}} = 5200
+$$
 
 该阶段目标是让脱落后的气泡稳定上升，并在后期逐渐缩小。
 
@@ -529,11 +703,39 @@ solid[p] = (y == 0 || y == NY - 1) ? 1 : 0;
 
 底部附近温度固定为壁面温度，并在成核点附近叠加局部高温热斑：
 
-```text
-T_WALL + HEATER_BOOST_Y1
-T_WALL + HEATER_BOOST_Y2
-T_WALL + HEATER_BOOST_Y3
-```
+$$
+T(x,1)=T_{\mathrm{wall}}+\Delta T_1
+$$
+
+$$
+T(x,2)=T_{\mathrm{wall}}+\Delta T_2
+$$
+
+$$
+T(x,3)=T_{\mathrm{wall}}+\Delta T_3
+$$
+
+其中：
+
+$$
+\Delta T_1=\texttt{HEATER\_BOOST\_Y1}
+$$
+
+$$
+\Delta T_2=\texttt{HEATER\_BOOST\_Y2}
+$$
+
+$$
+\Delta T_3=\texttt{HEATER\_BOOST\_Y3}
+$$
+
+对应当前代码：
+
+$$
+\Delta T_1=0.090,\qquad
+\Delta T_2=0.058,\qquad
+\Delta T_3=0.034
+$$
 
 该热斑用于稳定触发气泡生长。
 
@@ -706,10 +908,13 @@ int main()
 
 建议输出设置：
 
-```text
-总步数：10000
-输出间隔：200
-```
+$$
+N_{\mathrm{step}} = 10000
+$$
+
+$$
+N_{\mathrm{out}} = 200
+$$
 
 这样可以得到 51 帧数据，适合制作动画和定量曲线。
 
@@ -793,16 +998,24 @@ int main()
 
 涡量定义为：
 
-```text
-omega = ∂v/∂x - ∂u/∂y
-```
+$$
+\omega
+=
+\frac{\partial v}{\partial x}
+-
+\frac{\partial u}{\partial y}
+$$
 
 其中：
 
-```text
-u = dx
-v = dy
-```
+$$
+u = \texttt{dx}
+$$
+
+$$
+v = \texttt{dy}
+$$
+
 
 ---
 
@@ -966,9 +1179,9 @@ v = dy
 
 展示速度场时建议裁剪中下部区域，例如：
 
-```text
-y <= 75
-```
+$$
+y \leq 75
+$$
 
 并结合涡量图分析气泡附近流动结构。
 
@@ -995,11 +1208,17 @@ y <= 75
 
 建议比较：
 
-```text
-160 × 100
-200 × 125
-240 × 150
-```
+$$
+160 \times 100
+$$
+
+$$
+200 \times 125
+$$
+
+$$
+240 \times 150
+$$
 
 观察以下指标是否趋势一致：
 
@@ -1013,14 +1232,14 @@ y <= 75
 
 可以系统改变以下参数：
 
-```text
-EVAP_RISE
-COND_RISE
-BUOYANCY_RISE
-SURFACE_TENSION
-DETACHED_SUPPORT
-NECK_REWETTING
-```
+| 参数 | 主要影响 | 增大后的趋势 |
+|---|---|---|
+| `EVAP_RISE` | 脱落后气泡的蒸发维持强度 | 气泡存在更久，但过大可能导致气泡持续增大 |
+| `COND_RISE` | 脱落后气泡的冷凝强度 | 气泡更快缩小或消失 |
+| `BUOYANCY_RISE` | 脱落后气泡的上升速度 | 气泡上升更快，但过大可能导致气泡过早接近顶部边界 |
+| `SURFACE_TENSION` | 气液界面稳定性和气泡形状 | 气泡更圆、更稳定，但过大可能影响断颈脱落 |
+| `DETACHED_SUPPORT` | 脱落气泡后期维持项 | 气泡寿命延长，但过大可能导致气泡不消失 |
+| `NECK_REWETTING` | 泡颈再润湿和断颈过程 | 更容易脱落，但过大可能使断颈显得过于突然 |
 
 观察气泡生长、脱落和上升过程的变化。
 
@@ -1028,11 +1247,14 @@ NECK_REWETTING
 
 可根据温度梯度计算近似壁面热流：
 
-```text
-q_wall = -k × ∂T/∂y
-```
+$$
+q_{\mathrm{wall}}
+=
+-k
+\frac{\partial T}{\partial y}
+$$
 
-并进一步计算平均换热强度或类 Nusselt 数指标。
+其中，$q_{\mathrm{wall}}$ 为壁面热流密度，$k$ 为导热系数，$T$ 为温度，$y$ 为垂直于壁面的方向。并进一步计算平均换热强度或类 Nusselt 数指标。
 
 ### 4. 多气泡扩展
 
