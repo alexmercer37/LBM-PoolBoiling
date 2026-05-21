@@ -138,9 +138,7 @@ if (y <= EVAP_HEIGHT && dx_center <= HEATER_LATERAL_HALF_WIDTH)
 其中：
 
 $$
-\Delta T_{\mathrm{sup}}
-=
-\max \left(0,\ T - \left(T_{\mathrm{sat}} + \Delta T_0\right) \right)
+\Delta T_{\mathrm{sup}}=\max \left(0,\ T - \left(T_{\mathrm{sat}} + \Delta T_0\right) \right)
 $$
 $$
 \Delta T_0 = 0.010
