@@ -159,15 +159,7 @@ $$
 温度场采用扩散、对流和潜热冷却共同演化：
 
 $$
-T^{n+1}
-=
-T^n
-+
-D_T \nabla^2 T^n
--
-C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
--
-Q_L
+T^{n+1}=T^n+D_T \nabla^2 T^n-C_T \left( T^n - T_{\mathrm{upwind}}^n \right)-Q_L
 $$
 
 其中，热扩散项为：
@@ -179,17 +171,13 @@ $$
 温度对流项根据局部速度方向采用迎风格式近似：
 
 $$
-- C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
+-C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
 $$
 
 潜热冷却项为：
 
 $$
-Q_L
-=
-L_c
-\max \left(0, T_{\mathrm{sat}} - T^n \right)
-I(\phi)
+Q_L=L_c\max \left(0, T_{\mathrm{sat}} - T^n \right)I(\phi)
 $$
 
 主要温度参数如下：
@@ -224,9 +212,7 @@ $$
 流场采用 D2Q9 格子 Boltzmann 方法，碰撞模型为 BGK 格式。
 
 平衡分布函数为：
-$$
-f_i^{eq}=\omega_i\rho(1+3e_i\bullet u+\frac{9}{2}{(e_i\bullet u)}^2-\frac{3}{2}u^2)
-$$
+$$f_i^{eq} = \omega_i \rho \bigl(1 + 3 e_i \cdot u + \frac{9}{2}(e_i \cdot u)^2 - \frac{3}{2}u^2\bigr)$$  
 
 | 符号 | 含义 |
 |---|---|
@@ -285,9 +271,7 @@ $$
 表面张力力项为：
 
 $$
-\mathbf{F}_{s}
-=
-\sigma \kappa_{\text{proxy}} \nabla \phi
+\mathbf{F}_{s}=\sigma \kappa_{\text{proxy}} \nabla \phi
 $$
 
 对应代码形式为：
@@ -310,9 +294,7 @@ constexpr double SURFACE_TENSION = 8.6e-4;
 气泡上升主要由浮力项驱动。代码中通过气相体积分数近似构造浮力：
 
 $$
-\alpha_v
-=
-\frac{1-\phi}{2}
+\alpha_v=\frac{1-\phi}{2}
 $$
 
 当 `phi ≈ -1` 时，`vapor_fraction ≈ 1`，表示气相区域；当 `phi ≈ 1` 时，`vapor_fraction ≈ 0`，表示液相区域。
@@ -344,11 +326,7 @@ rho_phase =
 其中：
 
 $$
-\rho_{\mathrm{view}}
-=
-\frac{\rho_l+\rho_v}{2}
-+
-\frac{\rho_l-\rho_v}{2}\phi
+\rho_{\mathrm{view}}=\frac{\rho_l+\rho_v}{2}+\frac{\rho_l-\rho_v}{2}\phi
 $$
 
 
@@ -428,15 +406,7 @@ VMAX = 0.10
 温度场更新包含扩散、对流和潜热冷却：
 
 $$
-T^{n+1}
-=
-T^n
-+
-D_T \nabla^2 T^n
--
-C_T \left( T^n - T_{\mathrm{upwind}}^n \right)
--
-L_c \max \left(0,\ T_{\mathrm{sat}} - T^n \right) I(\phi)
+T^{n+1}=T^n+D_T \nabla^2 T^n-C_T \left( T^n - T_{\mathrm{upwind}}^n \right)-L_c \max \left(0,\ T_{\mathrm{sat}} - T^n \right) I(\phi)
 $$
 其中：
 
@@ -472,25 +442,7 @@ $$
 相场更新形式为：
 
 $$
-\phi^{n+1}
-=
-\mathrm{clip}
-\left(
-\phi^n
-+
-S_{\mathrm{adv}}
-+
-S_{\mathrm{AC}}
-+
-S_{\mathrm{evap}}
-+
-S_{\mathrm{cond}}
-+
-S_{\mathrm{rewet}}
-+
-S_{\mathrm{stem}},
--1,\ 1
-\right)
+\phi^{n+1}=\mathrm{clip}\left(\phi^n+S_{\mathrm{adv}}+S_{\mathrm{AC}}+S_{\mathrm{evap}}+S_{\mathrm{cond}}+S_{\mathrm{rewet}}+S_{\mathrm{stem}},-1,\ 1\right)
 $$
 
 其中：
@@ -510,16 +462,7 @@ $$
 流场采用标准 LBM 碰撞迁移：
 
 $$
-f_i^{*}
-=
-f_i
--
-\Omega
-\left(
-f_i - f_i^{eq}
-\right)
-+
-F_i
+f_i^{*}=f_i-\Omega\left(f_i - f_i^{eq}\right)+F_i
 $$
 
 其中：
@@ -966,7 +909,7 @@ $$
 |:---:|
 | ![速度场演化](data/velocity_speed_cropped.gif) |
 
-*速度场用于展示气泡脱落和上升过程中诱导的局部流动。由于顶部边界可能产生速度带，建议展示时裁剪中下部区域，例如 $y \le 75$。*
+*速度场用于展示气泡脱落和上升过程中诱导的局部流动。*
 
 <br>
 
@@ -981,11 +924,7 @@ $$
 涡量定义为：
 
 $$
-\omega
-=
-\frac{\partial v}{\partial x}
--
-\frac{\partial u}{\partial y}
+\omega=\frac{\partial v}{\partial x}-\frac{\partial u}{\partial y}
 $$
 
 其中：
@@ -1230,10 +1169,7 @@ $$
 可根据温度梯度计算近似壁面热流：
 
 $$
-q_{\mathrm{wall}}
-=
--k
-\frac{\partial T}{\partial y}
+q_{\mathrm{wall}}=-k\frac{\partial T}{\partial y}
 $$
 
 其中，$q_{\mathrm{wall}}$ 为壁面热流密度，$k$ 为导热系数，$T$ 为温度，$y$ 为垂直于壁面的方向。并进一步计算平均换热强度或类 Nusselt 数指标。
